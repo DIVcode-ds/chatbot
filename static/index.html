@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Nova AI</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+<div id="auth" class="auth-screen">
+  <div class="auth-card">
+    <div class="logo">✦ Nova AI</div>
+    <p class="muted">Your personal AI assistant</p>
+
+    <div class="tabs">
+      <button id="loginTab" class="active" onclick="showLogin()">Login</button>
+      <button id="registerTab" onclick="showRegister()">Create account</button>
+    </div>
+
+    <form id="loginForm" onsubmit="login(event)">
+      <input id="loginEmail" type="email" placeholder="Email" required>
+      <input id="loginPassword" type="password" placeholder="Password" required>
+      <button class="primary">Login</button>
+    </form>
+
+    <form id="registerForm" class="hidden" onsubmit="register(event)">
+      <input id="regName" placeholder="Your name" required>
+      <input id="regEmail" type="email" placeholder="Email" required>
+      <input id="regPassword" type="password" placeholder="Password (6+ characters)" required minlength="6">
+      <button class="primary">Create account</button>
+    </form>
+
+    <p id="authError" class="error"></p>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand">✦ Nova AI</div>
+    <button class="new-chat" onclick="newChat()">＋ New chat</button>
+    <div class="side-spacer"></div>
+    <div class="user-box">
+      <div id="userName"></div>
+      <small id="userEmail"></small>
+      <button onclick="logout()">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <strong>AI Assistant</strong>
+        <span id="status">Online</span>
+      </div>
+      <select id="language" title="Answer language">
+        <option>English</option>
+        <option>Hindi</option>
+        <option>Hinglish</option>
+        <option>Bengali</option>
+        <option>Marathi</option>
+        <option>Tamil</option>
+        <option>Telugu</option>
+        <option>Gujarati</option>
+        <option>Punjabi</option>
+        <option>Kannada</option>
+        <option>Malayalam</option>
+        <option>Urdu</option>
+        <option>Spanish</option>
+        <option>French</option>
+        <option>German</option>
+        <option>Japanese</option>
+      </select>
+    </header>
+
+    <section id="messages" class="messages">
+      <div class="welcome">
+        <div class="welcome-icon">✦</div>
+        <h1>How can I help you?</h1>
+        <p>Ask anything, upload an image or document, or use your voice.</p>
+      </div>
+    </section>
+
+    <div id="attachment" class="attachment hidden">
+      <span id="attachmentName"></span>
+      <button onclick="clearAttachment()">×</button>
+    </div>
+
+    <form class="composer" onsubmit="sendMessage(event)">
+      <input type="file" id="fileInput" hidden accept="image/*,.pdf,.txt,.docx">
+      <button type="button" class="icon-btn" title="Attach file" onclick="fileInput.click()">📎</button>
+      <button type="button" class="icon-btn" id="micBtn" title="Voice input" onclick="toggleRecording()">🎤</button>
+      <textarea id="prompt" rows="1" placeholder="Message Nova AI..." onkeydown="handleKey(event)"></textarea>
+      <button type="submit" class="send">➤</button>
+    </form>
+    <div class="disclaimer">AI can make mistakes. Verify important information.</div>
+  </main>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
