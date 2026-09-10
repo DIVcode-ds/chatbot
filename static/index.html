@@ -37,9 +37,17 @@
 
 <div id="app" class="app hidden">
   <aside class="sidebar">
-    <div class="brand">✦ Nova AI</div>
-    <button class="new-chat" onclick="newChat()">＋ New chat</button>
-    <div class="side-spacer"></div>
+  <div class="brand">💬 Nova AI</div>
+
+  <button class="new-chat" onclick="newChat()">＋ New chat</button>
+
+  <div class="recents-title">Recents</div>
+
+  <div id="recents" class="recents">
+    <!-- Previous chats will appear here -->
+  </div>
+
+  <div class="side-spacer"></div>
     <div class="user-box">
       <div id="userName"></div>
       <small id="userEmail"></small>

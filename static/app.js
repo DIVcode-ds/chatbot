@@ -17,8 +17,13 @@ function showRegister(){
   $("registerTab").classList.add("active"); $("loginTab").classList.remove("active");
 }
 function showApp(){
-  $("auth").classList.add("hidden"); $("app").classList.remove("hidden");
-  $("userName").textContent = user.name; $("userEmail").textContent = user.email;
+  $("auth").classList.add("hidden");
+  $("app").classList.remove("hidden");
+
+  $("userName").textContent = user.name;
+  $("userEmail").textContent = user.email;
+
+  loadRecents();
   loadHistory();
 }
 function showAuth(){ $("auth").classList.remove("hidden"); $("app").classList.add("hidden"); }
@@ -42,12 +47,146 @@ function logout(){localStorage.clear();location.reload();}
 function authHeaders(){return {"Authorization":"Bearer "+token};}
 
 async function loadHistory(){
-  const r=await fetch("/api/history?conversation_id="+encodeURIComponent(conversationId),{headers:authHeaders()});
-  if(!r.ok){logout();return;}
-  const d=await r.json(); $("messages").innerHTML="";
-  if(!d.messages.length){renderWelcome();return;}
-  d.messages.forEach(m=>addMessage(m.role,m.content));
+  const r = await fetch(
+    "/api/history?conversation_id=" +
+    encodeURIComponent(conversationId),
+    {headers: authHeaders()}
+  );
+
+  if(!r.ok){
+    logout();
+    return;
+  }
+
+  const d = await r.json();
+
+  $("messages").innerHTML = "";
+
+  if(!d.messages.length){
+    renderWelcome();
+    return;
+  }
+
+ addMessage("assistant", d.answer);
+
+/* Refresh the Recents sidebar */
+loadRecents();
+
+  updateRecentTitle(d.messages);
+  loadRecents();
 }
+
+/* =========================================
+   RECENT CHAT HISTORY
+   ========================================= */
+
+async function loadRecents(){
+
+  const r = await fetch("/api/history", {
+    headers: authHeaders()
+  });
+
+  if(!r.ok) return;
+
+  const d = await r.json();
+
+  const recents = $("recents");
+
+  if(!recents) return;
+
+  recents.innerHTML = "";
+
+  const conversations = {};
+
+  d.messages.forEach(message => {
+
+    if(!conversations[message.conversation_id]){
+      conversations[message.conversation_id] = [];
+    }
+
+    conversations[message.conversation_id].push(message);
+
+  });
+
+  const ids = Object.keys(conversations);
+
+  ids.reverse().forEach(id => {
+
+    const messages = conversations[id];
+
+    const firstUserMessage =
+      messages.find(m => m.role === "user");
+
+    let title = firstUserMessage
+      ? firstUserMessage.content
+      : "New chat";
+
+    title = createTopicTitle(title);
+
+    const button = document.createElement("button");
+
+    button.className =
+      "recent-chat" +
+      (id === conversationId ? " active" : "");
+
+    button.innerHTML = `
+      <span class="chat-icon">💬</span>
+      <span class="chat-title">${escapeHtml(title)}</span>
+    `;
+
+    button.onclick = () => {
+      conversationId = id;
+
+      localStorage.setItem(
+        "nova_conversation",
+        conversationId
+      );
+
+      loadHistory();
+      loadRecents();
+    };
+
+    recents.appendChild(button);
+
+  });
+
+}
+
+
+/* Create a short ChatGPT-style topic title */
+
+function createTopicTitle(text){
+
+  if(!text){
+    return "New chat";
+  }
+
+  text = text
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if(text.length > 42){
+    return text.substring(0, 42) + "…";
+  }
+
+  return text;
+}
+
+
+/* Update current conversation title */
+
+function updateRecentTitle(messages){
+
+  const firstUserMessage =
+    messages.find(m => m.role === "user");
+
+  if(!firstUserMessage){
+    return;
+  }
+
+  loadRecents();
+}
+
 function renderWelcome(){
   $("messages").innerHTML='<div class="welcome"><div class="welcome-icon">✦</div><h1>How can I help you?</h1><p>Ask anything, upload an image or document, or use your voice.</p></div>';
 }
@@ -95,7 +234,19 @@ $("fileInput").addEventListener("change",async()=>{
   }catch(err){clearAttachment();alert(err.message)}
 });
 function clearAttachment(){attachment=null;$("fileInput").value="";$("attachment").classList.add("hidden");}
-function newChat(){conversationId=crypto.randomUUID();localStorage.setItem("nova_conversation",conversationId);renderWelcome();}
+function newChat(){
+
+  conversationId = crypto.randomUUID();
+
+  localStorage.setItem(
+    "nova_conversation",
+    conversationId
+  );
+
+  renderWelcome();
+
+  loadRecents();
+}
 
 async function toggleRecording(){
   if(recording){mediaRecorder.stop();return;}
